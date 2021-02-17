@@ -1,0 +1,117 @@
+---
+title: "PP1"
+author: "Rebecca Smith"
+date: "2/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Load and Install Libraries
+```{r load-install}
+library(tidyverse)
+library(haven)
+ATP_W53 <- read_sav("~/DataScience/Portfolio/W53_Sep19/W53_Sep19/ATP W53.sav")
+```
+For this portfolio piece, I will be using a dataset from the Pew Research Center. In September 2019, Pew conducted their American Trends Panel Wave 53. This survey contained questions regarding policy and social preferences, attitudes and opinions towards politicians and the parties, among other topics. 
+
+In the survey, they ask respondents to indicate how much of a problem certain social and policy issues are in America. These questions and responses will be the focus of this project.
+
+To begin, let's take a look at the dataset in its entirety. 
+```{r view-df}
+View(ATP_W53)
+str(ATP_W53)
+summary(ATP_W53)
+```
+This dataset contains 9.9895 observations (rows) and 183 variables (columns). 
+
+I want to focus on what the respondent's deemed to be national problems. In the survey, respondents are asked "How much of a problem do you think each of the following are in the country today?". The topics include terrorism, the federal budget deficit, the affordability of healthcare, racism, the affordability of a college education, drug addiction, job opportunities for all Americans, illegal immigration, economic inequality, climate change, and sexism. The response options range from 1 to 4, where 1 equals "a very big problem" and 4 equals "not a problem at all". Responses coded as '99' indicate that the respondent either didn't answer or didn't know.
+
+First, I want to rename the variables so that they're easily digestable. With those renamed variables, I will create a new dataframe to work with.
+```{r rename df}
+ATP_W53 <- ATP_W53 %>% rename(terrorism = NATPROBS_a_W53)
+ATP_W53 <- ATP_W53 %>% rename(fed_budget_deficit = NATPROBS_c_W53, affordability_of_healthcare = NATPROBS_d_W53, racism = NATPROBS_e_W53, affordability_of_higher_ed = NATPROBS_f_W53, drug_addiction = NATPROBS_g_W53, job_opportunities_all_Americans = NATPROBS_h_W53, illegal_immigration = NATPROBS_i_W53, economic_inequality = NATPROBS_j_W53, climate_change = NATPROBS_k_W53, sexism = NATPROBS_l_W53)
+
+USA_problems <- ATP_W53[c("terrorism", "fed_budget_deficit", "affordability_of_healthcare", "racism", "affordability_of_higher_ed", "drug_addiction", "job_opportunities_all_Americans", "illegal_immigration", "economic_inequality", "climate_change", "sexism")]
+```
+From this new dataframe, I want to look at the frequency counts for the responses people gave for each problem.
+```{r freq - terrorism}
+table(USA_problems$terrorism)
+```
+In regard to terrorism, we see that 2,099 respondents answered with response option 2. That is, most respondents indicated that terrorism was a moderately big problem.
+```{r freq fed_budget_def}
+table(USA_problems$fed_budget_deficit)
+```
+As for the federal budget deficit, 2,759 respondents indicated that it was a very big problem in the United States.
+```{r freq afford_healthcare}
+table(USA_problems$affordability_of_healthcare)
+```
+3,319 respondents indicated that the affordability of healthcare in the United States was a very big problem.
+```{r freq racism}
+table(USA_problems$racism)
+```
+2,139 respondents believe that racism is a very big problem in the United States.
+```{r freq afford_highered}
+table(USA_problems$affordability_of_higher_ed)
+```
+In regard to the affordability of higher education, 2,700 respondents marked that it was a very big problem.
+```{r freq drug_add}
+table(USA_problems$drug_addiction)
+```
+Wow! 3,060 respondents believe that drug addiction is a very big problem in the United States.
+```{r freq job_opp}
+table(USA_problems$job_opportunities_all_Americans)
+```
+2,097 respondents believe that job opportunities for all Americans is a moderately big problem in the United States today.
+```{r freq illegal immigration}
+table(USA_problems$illegal_immigration)
+```
+3,850 respondents indicated that illegal immigration is a very big problem facing our country.
+```{r freq econ inequality}
+table(USA_problems$economic_inequality)
+```
+4,593 respondents believe that economoic inequality is a very big problem.
+```{r freq climate}
+table(USA_problems$climate_change)
+```
+5,144 respondents indicated that climate change is a very big problem facing our country today.
+```{r sexism}
+table(USA_problems$sexism)
+```
+And, finally, 3,792 respondents indicated that sexism is a moderately big problem facing the country today.
+
+Let's visualize some of these items. I'll focus on climate change and economic inequality because most respondents believe these two issues to be major problems facing our country today.
+```{r hist}
+plot(as.factor(USA_problems$climate_change), (USA_problems$economic_inequality),
+     main = "Economic Inequality and Climate Change",
+     sub = "Plotting the distribution of responses for the issues of economic inequality and climate change",
+     xlab = "Response Options",
+     ylab = "Frequency of Responses",
+     xlim = c(1, 4),
+     ylim = c(0, 60)
+     )
+```
+
+That visualization is lacking. We can see somewhat of a distribution, but not clearly. Let's try a correlation matrix. I want to see how the responses to each issue correlate to one another. For instance, if the respondent believes that economic inequality is a very big problem, do they also think that climate change is a very big problem?
+
+First, I need to install a new package.
+```{r install-corr}
+library(corrplot)
+```
+Now, I'll create a new dataframe containing the two variables I'm interested in.
+```{r corr df}
+corrdf <- USA_problems[c(9:10)]
+```
+Next, I'm going to convert those two variable types to numeric.
+```{r corrdf num}
+corrdfnum <- as.data.frame(corrdf, 2, as.numeric)
+sapply(corrdfnum, class)
+```
+Finally, I'll create the correlation matrix.
+```{r corrmat}
+C <- cor(corrdfnum, use = "pairwise.complete.obs")
+corrplot (C, method = 'circle')
+```
+While the correlation matrix is underwhelming, we do see what respondents who believed climate change was a big problem also believed that economic inequality was a big problem. For this project, this is where I'll leave it! Next time, I think I'll see how these responses correlate with how well the respondents believed Trump did while in office!
